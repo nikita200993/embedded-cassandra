@@ -5,12 +5,8 @@ import java.nio.file.Path;
 import org.apache.cassandra.cql3.QueryProcessor;
 import org.apache.cassandra.db.ConsistencyLevel;
 import org.apache.cassandra.service.CassandraDaemon;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class Main {
-
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws IOException {
         System.setProperty(

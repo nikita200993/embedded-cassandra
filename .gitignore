@@ -1,0 +1,9 @@
+# idea dir
+.idea/
+
+# gradle
+.gradle/
+build/
+
+# logs
+*.log

@@ -1,20 +1,5 @@
 <configuration scan="true">
     <jmxConfigurator/>
-    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${cassandra.logdir}/system.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>${cassandra.logdir}/system.log.%i.zip</fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>20</maxIndex>
-        </rollingPolicy>
-
-        <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>20MB</maxFileSize>
-        </triggeringPolicy>
-        <encoder>
-            <pattern>%-5level [%thread] %date{ISO8601} %F:%L - %msg%n</pattern>
-        </encoder>
-    </appender>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
@@ -23,7 +8,10 @@
     </appender>
 
     <root level="WARN">
-        <appender-ref ref="FILE"/>
         <appender-ref ref="STDOUT"/>
     </root>
+
+    <logger name="Main" additivity="false" level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </logger>
 </configuration>

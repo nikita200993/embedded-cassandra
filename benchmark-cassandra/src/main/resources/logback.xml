@@ -7,11 +7,16 @@
         </encoder>
     </appender>
 
+    <appender name="STDOUT_2" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-5level %date{HH:mm:ss,SSS} [%thread] %class{0}.%method:%L %msg%n</pattern>
+        </encoder>
+    </appender>
+
     <root level="WARN">
         <appender-ref ref="STDOUT"/>
     </root>
-
-    <logger name="Main" additivity="false" level="INFO">
-        <appender-ref ref="STDOUT"/>
+    <logger name="com.nikitaaero" additivity="false" level="INFO">
+        <appender-ref ref="STDOUT_2"/>
     </logger>
 </configuration>

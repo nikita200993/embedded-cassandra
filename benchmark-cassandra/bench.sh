@@ -1,5 +1,6 @@
 #!/bin/bash
 
-output="$(dirname "$0")/benchmark_report.txt"
+script_dir=$(dirname "$0")
+output="$script_dir/benchmark_report.txt"
 
-java -jar ./target/benchmarks.jar EmbeddedDatabaseBenchmark -rf text -rff "$output"
+java -jar "$script_dir/target/benchmarks.jar" EmbeddedDatabaseBenchmark -rf text -rff "$output"

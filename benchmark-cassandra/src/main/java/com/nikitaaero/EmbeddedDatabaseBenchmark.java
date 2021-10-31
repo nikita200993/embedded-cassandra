@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 @BenchmarkMode(Mode.Throughput)
 @Fork(value = 1, jvmArgsPrepend = {"--add-exports", "java.base/jdk.internal.ref=ALL-UNNAMED"})
-@Measurement(iterations = 1)
+@Measurement(iterations = 3)
 @Warmup(iterations = 2)
 @State(Scope.Thread)
 public class EmbeddedDatabaseBenchmark {

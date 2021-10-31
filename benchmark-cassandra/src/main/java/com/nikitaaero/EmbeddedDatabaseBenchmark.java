@@ -4,10 +4,10 @@ package com.nikitaaero;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.CqlSessionBuilder;
 import com.nikitaaero.entity.Person;
 import com.nikitaaero.entity.repository.PersonDriverBasedRepo;
@@ -45,40 +45,17 @@ public class EmbeddedDatabaseBenchmark {
     private final Random random = new Random();
     private final int numRows = 10_000_000;
     private final Repository<Person, Long> repo = new PersonEmbeddedApiRepository(ConsistencyLevel.ONE);
+    private final Stack<AutoCloseable> resources = new Stack<>();
 
-    private CqlSession session;
     private Repository<Person, Long> driverBasedRepo;
-    private AutoCloseable resource;
     private List<Long> ids;
 
     @Setup
     public void prepare() {
         activateDaemon();
         createSchema();
-        createSession();
-        driverBasedRepo = PersonDriverBasedRepo.create(session);
+        createDriverBasedRepo();
         insertRows();
-    }
-
-    private void createSchema() {
-        logger.info("Creating schema.");
-        new SchemaCreator("schema.cql").createSchema();
-        logger.info("Schema was created.");
-        showRows("SELECT table_name FROM system_schema.tables WHERE keyspace_name = 'test'");
-    }
-
-    private void createSession() {
-        logger.info("Creating session...");
-        session = new CqlSessionBuilder()
-                .build();
-        logger.info("Session created.");
-    }
-
-    @TearDown
-    public void close() throws Exception {
-        logger.info("Closing...");
-        session.close();
-        resource.close();
     }
 
     @Setup(Level.Invocation)
@@ -86,6 +63,18 @@ public class EmbeddedDatabaseBenchmark {
         ids = new ArrayList<>();
         for (int i = 0; i < 1000; i++) {
             ids.add((long) random.nextInt(numRows));
+        }
+    }
+
+    @TearDown
+    public void close() {
+        logger.info("Closing...");
+        for (AutoCloseable resource : resources) {
+            try {
+                resource.close();
+            } catch (final Exception exception) {
+                logger.error("Failed to close resource {}.", resource, exception);
+            }
         }
     }
 
@@ -105,14 +94,24 @@ public class EmbeddedDatabaseBenchmark {
         }
     }
 
-    private void showRows(final String s) {
-        logRows(QueryProcessor.execute(s, ConsistencyLevel.ALL));
-    }
-
     private void activateDaemon() {
         logger.info("Activating cassandra daemon...");
-        resource = new CassandraDaemonActivator().activate();
+        resources.add(new CassandraDaemonActivator().activate());
         logger.info("Cassandra daemon was activated.");
+    }
+
+    private void createSchema() {
+        logger.info("Creating schema.");
+        new SchemaCreator("schema.cql").createSchema();
+        logger.info("Schema was created.");
+        showRows("SELECT table_name FROM system_schema.tables WHERE keyspace_name = 'test'");
+    }
+
+    private void createDriverBasedRepo() {
+        final var session = new CqlSessionBuilder()
+                .build();
+        resources.add(session);
+        driverBasedRepo = PersonDriverBasedRepo.create(session);
     }
 
     private void insertRows() {
@@ -126,6 +125,10 @@ public class EmbeddedDatabaseBenchmark {
             }
         }
         logger.info("Rows were inserted.");
+    }
+
+    private void showRows(final String s) {
+        logRows(QueryProcessor.execute(s, ConsistencyLevel.ALL));
     }
 
     private static void logRows(final UntypedResultSet resultSet) {

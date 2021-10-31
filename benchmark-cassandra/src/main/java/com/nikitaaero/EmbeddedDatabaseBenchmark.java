@@ -40,10 +40,11 @@ import org.slf4j.LoggerFactory;
 @State(Scope.Thread)
 public class EmbeddedDatabaseBenchmark {
 
+    private static final int OPS_IN_ONE_BENCH = 1000;
     private static final Logger logger = LoggerFactory.getLogger(EmbeddedDatabaseBenchmark.class);
 
     private final Random random = new Random();
-    private final int numRows = 1_000;
+    private final int numRows = 10_000_000;
     private final Repository<Person, Long> repo = new PersonEmbeddedApiRepository(ConsistencyLevel.ONE);
     private final List<AutoCloseable> resources = new ArrayList<>();
 
@@ -61,7 +62,7 @@ public class EmbeddedDatabaseBenchmark {
     @Setup(Level.Invocation)
     public void setIds() {
         ids = new ArrayList<>();
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < OPS_IN_ONE_BENCH; i++) {
             ids.add((long) random.nextInt(numRows));
         }
     }
@@ -81,7 +82,7 @@ public class EmbeddedDatabaseBenchmark {
     }
 
 //    @Benchmark
-//    @OperationsPerInvocation(1000)
+//    @OperationsPerInvocation(OPS_IN_ONE_BENCH)
 //    public void selectViaEmbeddedApi(final Blackhole blackhole) {
 //        for (final Long id : ids) {
 //            blackhole.consume(repo.findUnique(id));
@@ -89,7 +90,7 @@ public class EmbeddedDatabaseBenchmark {
 //    }
 
     @Benchmark
-    @OperationsPerInvocation(1000)
+    @OperationsPerInvocation(OPS_IN_ONE_BENCH)
     public void selectViaDriverApi(final Blackhole blackhole) {
         for (final Long id : ids) {
             blackhole.consume(driverBasedRepo.findUnique(id));

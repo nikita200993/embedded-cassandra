@@ -2,9 +2,9 @@ package com.nikitaaero;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.Stack;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -43,9 +43,9 @@ public class EmbeddedDatabaseBenchmark {
     private static final Logger logger = LoggerFactory.getLogger(EmbeddedDatabaseBenchmark.class);
 
     private final Random random = new Random();
-    private final int numRows = 10_000_000;
+    private final int numRows = 1_000;
     private final Repository<Person, Long> repo = new PersonEmbeddedApiRepository(ConsistencyLevel.ONE);
-    private final Stack<AutoCloseable> resources = new Stack<>();
+    private final List<AutoCloseable> resources = new ArrayList<>();
 
     private Repository<Person, Long> driverBasedRepo;
     private List<Long> ids;
@@ -69,7 +69,9 @@ public class EmbeddedDatabaseBenchmark {
     @TearDown
     public void close() {
         logger.info("Closing...");
-        for (AutoCloseable resource : resources) {
+        final var reversed = new ArrayList<>(resources);
+        Collections.reverse(reversed);
+        for (AutoCloseable resource : reversed) {
             try {
                 resource.close();
             } catch (final Exception exception) {
@@ -78,13 +80,13 @@ public class EmbeddedDatabaseBenchmark {
         }
     }
 
-    @Benchmark
-    @OperationsPerInvocation(1000)
-    public void selectViaEmbeddedApi(final Blackhole blackhole) {
-        for (final Long id : ids) {
-            blackhole.consume(repo.findUnique(id));
-        }
-    }
+//    @Benchmark
+//    @OperationsPerInvocation(1000)
+//    public void selectViaEmbeddedApi(final Blackhole blackhole) {
+//        for (final Long id : ids) {
+//            blackhole.consume(repo.findUnique(id));
+//        }
+//    }
 
     @Benchmark
     @OperationsPerInvocation(1000)

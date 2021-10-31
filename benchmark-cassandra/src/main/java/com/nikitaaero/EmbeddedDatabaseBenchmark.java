@@ -81,13 +81,13 @@ public class EmbeddedDatabaseBenchmark {
         }
     }
 
-//    @Benchmark
-//    @OperationsPerInvocation(OPS_IN_ONE_BENCH)
-//    public void selectViaEmbeddedApi(final Blackhole blackhole) {
-//        for (final Long id : ids) {
-//            blackhole.consume(repo.findUnique(id));
-//        }
-//    }
+    @Benchmark
+    @OperationsPerInvocation(OPS_IN_ONE_BENCH)
+    public void selectViaEmbeddedApi(final Blackhole blackhole) {
+        for (final Long id : ids) {
+            blackhole.consume(repo.findUnique(id));
+        }
+    }
 
     @Benchmark
     @OperationsPerInvocation(OPS_IN_ONE_BENCH)
@@ -123,7 +123,7 @@ public class EmbeddedDatabaseBenchmark {
             repo.insert(randomPerson(i));
             final int percent = insertionProgressPercent(i + 1);
             final int previousPercent = insertionProgressPercent(i);
-            if (percent % 10 == 0 && percent != previousPercent) {
+            if (percent % 5 == 0 && percent != previousPercent) {
                 logger.info("Insertion progress {}%.", percent);
             }
         }
